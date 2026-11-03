@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { useState, useEffect } from 'react';
 // export {};
 
 export interface UsePaginationOptions {
@@ -36,6 +36,12 @@ export function usePagination({
     const [currentPage, setCurrentPageState] = useState<number>(() => {
         return Math.min(Math.max(1, initialPage), totalPages);
     });
+    // Clamps currentPage if totalPages drops below current page dynamically
+    useEffect(()=>{
+        if(currentPage > totalPages){
+            setCurrentPageState(totalPages);
+        }
+    },[currentPage,totalPages]);
 
     // Calculate indices (0-based)
     const startIndex = totalItems === 0 ? 0 : (currentPage - 1) * safeItemsPerPage;
