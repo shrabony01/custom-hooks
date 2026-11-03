@@ -1,5 +1,5 @@
-import React from "react";
-import PaginationDemo from "./components/PaginationDemo";
+import React from 'react';
+import PaginationDemo from './components/PaginationDemo';
 import DebounceSearchDemo from './components/DebounceSearchDemo';
 
 function App() {
@@ -17,9 +17,9 @@ function App() {
         <DebounceSearchDemo />
       </div>
     </main>
-
-  )
+  );
 }
+
 export default App;
 
 const appStyles: { [key: string]: React.CSSProperties } = {

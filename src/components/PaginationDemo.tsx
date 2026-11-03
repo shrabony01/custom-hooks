@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { usePagination } from '../hooks/usePagination';
 
-// Generate 100 sample items
-const SAMPLE_ITEMS = Array.from({ length: 100 }, (_, index) => `Item #${index + 1}`);
+const TOTAL_COUNT = 123;
+const SAMPLE_ITEMS = Array.from({ length: TOTAL_COUNT }, (_, index) => `Item ${index + 1}`);
 
 export const PaginationDemo: React.FC = () => {
-  const itemsPerPage = 8;
+  const [itemsPerPage, setItemsPerPage] = useState<number>(5);
+
   const {
     currentPage,
     totalPages,
@@ -23,76 +24,90 @@ export const PaginationDemo: React.FC = () => {
     initialPage: 1,
   });
 
-  // Slice items using 0-based indices from usePagination
   const currentItems = SAMPLE_ITEMS.slice(startIndex, endIndex + 1);
 
   return (
     <div style={styles.card}>
-      <h2 style={styles.heading}>usePagination Demo</h2>
-      <p style={styles.subtext}>
-        Managing <strong>{SAMPLE_ITEMS.length}</strong> total items at <strong>{itemsPerPage}</strong> items per page.
-      </p>
+      <h3 style={styles.title}>Pagination Demo</h3>
 
-      {/* Meta Stats Panel */}
-      <div style={styles.statsGrid}>
-        <div style={styles.statBox}>
-          <span style={styles.statLabel}>Current Page</span>
-          <strong>{currentPage} / {totalPages}</strong>
+      {/* Dropdown with 5, 10, 15, 20 and Total Items count */}
+      <div style={styles.topRow}>
+        <div style={styles.selectWrapper}>
+          <label htmlFor="per-page-select" style={styles.label}>
+            Items per page:{' '}
+          </label>
+          <select
+            id="per-page-select"
+            value={itemsPerPage}
+            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+            style={styles.select}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
+            <option value={20}>20</option>
+          </select>
         </div>
-        <div style={styles.statBox}>
-          <span style={styles.statLabel}>Index Range</span>
-          <strong>{startIndex} – {endIndex}</strong>
-        </div>
-        <div style={styles.statBox}>
-          <span style={styles.statLabel}>Items On Page</span>
-          <strong>{itemsOnCurrentPage}</strong>
+
+        <div style={styles.totalItemsText}>
+          Total Items: {SAMPLE_ITEMS.length}
         </div>
       </div>
 
-      {/* Items Slice List */}
-      <ul style={styles.list}>
+      {/* Ordered list */}
+      <ol start={startIndex + 1} style={styles.orderedList}>
         {currentItems.map((item, idx) => (
           <li key={idx} style={styles.listItem}>
             {item}
           </li>
         ))}
-      </ul>
+      </ol>
 
-      {/* Navigation Controls */}
-      <div style={styles.controlRow}>
+      {/* Navigation Controls: Previous, Page X of Y, Next */}
+      <div style={styles.navRow}>
         <button
           type="button"
           onClick={prevPage}
           disabled={!canPrevPage}
-          style={{ ...styles.btn, ...(!canPrevPage ? styles.btnDisabled : {}) }}
+          style={canPrevPage ? styles.textBtn : styles.textBtnDisabled}
         >
           Previous
         </button>
 
-        <div style={styles.pagePills}>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-            <button
-              key={pageNum}
-              type="button"
-              onClick={() => setPage(pageNum)}
-              style={{
-                ...styles.pillBtn,
-                ...(currentPage === pageNum ? styles.pillActive : {}),
-              }}
-            >
-              {pageNum}
-            </button>
-          ))}
+        <div style={styles.pageIndicator}>
+          Page <span style={styles.pageNumber}>{currentPage}</span> of {totalPages}
         </div>
 
         <button
           type="button"
           onClick={nextPage}
           disabled={!canNextPage}
-          style={{ ...styles.btn, ...(!canNextPage ? styles.btnDisabled : {}) }}
+          style={canNextPage ? styles.textBtn : styles.textBtnDisabled}
         >
           Next
         </button>
+      </div>
+
+      {/* Summary Range */}
+      <div style={styles.summaryText}>
+        Showing items {itemsOnCurrentPage === 0 ? '0 - 0' : `${startIndex + 1} - ${endIndex + 1}`} (Total on this page: {itemsOnCurrentPage})
+      </div>
+
+      {/* Page Number Pills */}
+      <div style={styles.pillContainer}>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+          <button
+            key={pageNum}
+            type="button"
+            onClick={() => setPage(pageNum)}
+            style={{
+              ...styles.pill,
+              ...(currentPage === pageNum ? styles.activePill : {}),
+            }}
+          >
+            {pageNum}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -103,80 +118,118 @@ export default PaginationDemo;
 const styles: { [key: string]: React.CSSProperties } = {
   card: {
     backgroundColor: '#ffffff',
-    padding: '1.5rem',
-    borderRadius: '10px',
-    border: '1px solid #e2e8f0',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-    marginBottom: '2rem',
+    border: '1px solid #d1d5db',
+    borderRadius: '12px',
+    padding: '1.75rem 2rem',
+    maxWidth: '680px',
+    margin: '0 auto 2rem',
+    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    color: '#374151',
   },
-  heading: { margin: '0 0 0.5rem', color: '#1e293b', fontSize: '1.35rem' },
-  subtext: { margin: '0 0 1rem', color: '#64748b', fontSize: '0.9rem' },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '0.75rem',
-    marginBottom: '1rem',
-  },
-  statBox: {
-    backgroundColor: '#f8fafc',
-    border: '1px solid #e2e8f0',
-    padding: '0.6rem 0.8rem',
-    borderRadius: '6px',
+  title: {
     textAlign: 'center',
-    fontSize: '0.85rem',
+    margin: '0 0 1.5rem',
+    fontSize: '1.15rem',
+    fontWeight: 500,
+    color: '#1f2937',
   },
-  statLabel: { display: 'block', color: '#64748b', marginBottom: '0.2rem', fontSize: '0.75rem' },
-  list: {
-    listStyle: 'none',
-    padding: 0,
-    margin: '0 0 1.25rem',
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '0.5rem',
-  },
-  listItem: {
-    backgroundColor: '#f1f5f9',
-    padding: '0.55rem 0.8rem',
-    borderRadius: '6px',
-    fontSize: '0.875rem',
-    color: '#334155',
-    border: '1px solid #e2e8f0',
-  },
-  controlRow: {
+  topRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    flexWrap: 'wrap',
+    marginBottom: '1.5rem',
+    fontSize: '0.95rem',
+  },
+  selectWrapper: {
+    display: 'flex',
+    alignItems: 'center',
     gap: '0.5rem',
   },
-  btn: {
-    padding: '0.5rem 1rem',
-    backgroundColor: '#2563eb',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '0.875rem',
-    fontWeight: 500,
+  label: {
+    color: '#4b5563',
   },
-  btnDisabled: {
-    backgroundColor: '#cbd5e1',
-    cursor: 'not-allowed',
-    color: '#94a3b8',
-  },
-  pagePills: { display: 'flex', gap: '0.3rem', flexWrap: 'wrap' },
-  pillBtn: {
-    padding: '0.35rem 0.65rem',
+  select: {
+    padding: '0.2rem 0.5rem',
+    borderRadius: '4px',
     border: '1px solid #cbd5e1',
     backgroundColor: '#ffffff',
-    borderRadius: '4px',
     cursor: 'pointer',
-    fontSize: '0.8rem',
+    fontSize: '0.9rem',
   },
-  pillActive: {
-    backgroundColor: '#2563eb',
+  totalItemsText: {
+    fontStyle: 'italic',
+    color: '#4b5563',
+  },
+  orderedList: {
+    paddingLeft: '1.25rem',
+    margin: '0 0 2rem',
+    lineHeight: 1.8,
+    fontSize: '0.95rem',
+  },
+  listItem: {
+    marginBottom: '0.25rem',
+  },
+  navRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '0.75rem',
+    fontSize: '0.95rem',
+  },
+  pageIndicator: {
+    color: '#374151',
+  },
+  pageNumber: {
+    display: 'inline-block',
+    minWidth: '1.5rem',
+    textAlign: 'center',
+  },
+  textBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#1f2937',
+    fontSize: '0.95rem',
+    cursor: 'pointer',
+    padding: '0.25rem 0.5rem',
+  },
+  textBtnDisabled: {
+    background: 'none',
+    border: 'none',
+    color: '#9ca3af',
+    fontSize: '0.95rem',
+    cursor: 'not-allowed',
+    padding: '0.25rem 0.5rem',
+  },
+  summaryText: {
+    textAlign: 'center',
+    fontSize: '0.875rem',
+    color: '#4b5563',
+    margin: '0.5rem 0 1rem',
+  },
+  pillContainer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: '0.25rem',
+  },
+  pill: {
+    minWidth: '28px',
+    height: '28px',
+    padding: '0 4px',
+    border: '1px solid #d1d5db',
+    borderRadius: '4px',
+    backgroundColor: '#f9fafb',
+    color: '#1f2937',
+    fontSize: '0.8rem',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activePill: {
+    backgroundColor: '#0070f3',
+    borderColor: '#0070f3',
     color: '#ffffff',
-    borderColor: '#2563eb',
     fontWeight: 600,
   },
 };
